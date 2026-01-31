@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Bndo APP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --navy: #0B1136; --green: #22C55F; --blue: #3B82F6; --red: #DC2626; --orange: #F59E0B;
+            --text: #0B1136; --text-light: #64748B; --border: rgba(11, 17, 54, 0.06);
+            --bg: #FFFFFF; --bg-subtle: #FAFBFC;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--bg); border-right: 0.5px solid var(--border); padding: 24px; position: fixed; height: 100vh; overflow-y: auto; }
+        .logo { font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+        .logo-subtitle { font-size: 12px; color: var(--green); font-weight: 600; margin-bottom: 32px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-light); font-weight: 500; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: all 0.3s; margin-bottom: 8px; }
+        .nav-item:hover { background: var(--bg-subtle); color: var(--text); }
+        .nav-item.active { background: var(--navy); color: white; }
+        .nav-badge { margin-left: auto; background: var(--red); color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700; }
+        .main-content { flex: 1; margin-left: 280px; padding: 40px 48px; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .dashboard-header h1 { font-size: 40px; font-weight: 600; color: var(--navy); }
+        .subtitle { color: var(--text-light); font-size: 17px; margin-top: 8px; }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; font-size: 14px; color: var(--text-light); }
+        .breadcrumb-link { color: var(--blue); cursor: pointer; text-decoration: none; }
+        .breadcrumb-link:hover { text-decoration: underline; }
+        .search-bar { display: flex; gap: 16px; margin-bottom: 32px; background: var(--bg); padding: 12px 20px; border-radius: 12px; border: 0.5px solid var(--border); }
+        .search-bar input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 32px; }
+        .stat-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 24px; }
+        .stat-label { font-size: 13px; color: var(--text-light); margin-bottom: 8px; }
+        .stat-value { font-size: 36px; font-weight: 300; color: var(--navy); margin-bottom: 8px; }
+        .btn-primary { padding: 12px 28px; background: var(--navy); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(11, 17, 54, 0.15); }
+        .btn-success { background: var(--green); color: white; padding: 10px 20px; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; margin-right: 8px; }
+        .btn-danger { background: var(--red); color: white; padding: 10px 20px; border: none; border-radius: 10px; font-weight: 500; cursor: pointer; }
+        .btn-secondary { background: var(--bg-subtle); border: 0.5px solid var(--border); padding: 10px 20px; border-radius: 10px; font-weight: 500; cursor: pointer; margin-right: 8px; }
+        .clienti-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px; }
+        .cliente-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 32px 24px; cursor: pointer; transition: all 0.4s; }
+        .cliente-card:hover { border-color: rgba(34, 197, 95, 0.2); box-shadow: 0 12px 40px rgba(11, 17, 54, 0.08); transform: translateY(-4px); }
+        .cliente-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
+        .cliente-info h3 { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+        .cliente-meta { font-size: 13px; color: var(--text-light); }
+        .cliente-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 0.5px solid var(--border); }
+        .cliente-stat { text-align: center; }
+        .cliente-stat-value { font-size: 24px; font-weight: 300; color: var(--navy); }
+        .cliente-stat-label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+        .section-title { font-size: 24px; font-weight: 600; color: var(--navy); margin-bottom: 20px; }
+        .richieste-list, .pratiche-list { display: flex; flex-direction: column; gap: 16px; }
+        .richiesta-card, .pratica-card-admin { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 24px; transition: all 0.3s; }
+        .richiesta-card:hover, .pratica-card-admin:hover { box-shadow: 0 8px 24px rgba(11, 17, 54, 0.06); }
+        .richiesta-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 16px; }
+        .richiesta-info h3 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+        .richiesta-meta { font-size: 13px; color: var(--text-light); }
+        .richiesta-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; padding: 16px; background: var(--bg-subtle); border-radius: 12px; }
+        .detail-item label { display: block; font-size: 12px; color: var(--text-light); margin-bottom: 4px; }
+        .detail-item span { font-size: 14px; color: var(--text); font-weight: 500; }
+        .richiesta-descrizione { padding: 16px; background: var(--bg-subtle); border-radius: 12px; margin-bottom: 16px; }
+        .richiesta-descrizione p { font-size: 14px; color: var(--text); line-height: 1.6; }
+        .richiesta-actions { display: flex; gap: 12px; }
+        .badge { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .badge-new { background: rgba(34, 197, 95, 0.1); color: var(--green); }
+        .badge-blue { background: rgba(239, 246, 255, 0.8); color: var(--blue); }
+        .badge-yellow { background: rgba(254, 243, 199, 0.8); color: var(--orange); }
+        .badge-green { background: rgba(209, 250, 229, 0.8); color: var(--green); }
+        .badge-red { background: rgba(254, 243, 242, 0.8); color: var(--red); }
+        .view { display: none; }
+        .view.active { display: block; }
+        .back-button { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-subtle); border: 0.5px solid var(--border); border-radius: 12px; cursor: pointer; margin-bottom: 24px; border: none; }
+        .dettaglio-header { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+        .dettaglio-title { display: flex; justify-content: space-between; margin-bottom: 24px; }
+        .dettaglio-title h2 { font-size: 32px; font-weight: 600; color: var(--navy); }
+        .progress-section { margin-top: 20px; padding-top: 20px; border-top: 0.5px solid var(--border); }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .progress-percentage { font-size: 32px; font-weight: 300; color: var(--navy); }
+        .progress-bar { height: 6px; background: var(--bg-subtle); border-radius: 8px; }
+        .progress-fill { height: 100%; background: var(--green); border-radius: 8px; transition: width 0.5s; }
+        .admin-controls { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+        .control-group { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-group { margin-bottom: 0; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; color: var(--text-light); margin-bottom: 8px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 0.5px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; font-family: inherit; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .tabs { display: flex; gap: 8px; background: var(--bg-subtle); padding: 6px; border-radius: 12px; margin-bottom: 24px; }
+        .tab-button { flex: 1; padding: 12px 20px; background: transparent; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: var(--text-light); cursor: pointer; }
+        .tab-button.active { background: var(--navy); color: white; }
+        .tab-content { }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .documenti-section, .chat-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 32px; }
+        .section-title-small { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 20px; }
+        .documenti-list { display: flex; flex-direction: column; gap: 16px; }
+        .documento-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-subtle); border-radius: 12px; }
+        .documento-info { display: flex; gap: 16px; flex: 1; }
+        .documento-actions { display: flex; gap: 8px; }
+        .status-approvato { background: rgba(209, 250, 229, 0.8); color: var(--green); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .status-pending { background: rgba(254, 243, 199, 0.8); color: var(--orange); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .status-richiesto { background: rgba(254, 243, 242, 0.8); color: var(--red); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .chat-messages { display: flex; flex-direction: column; gap: 16px; max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding: 20px; background: var(--bg-subtle); border-radius: 12px; }
+        .message { display: flex; flex-direction: column; gap: 8px; max-width: 70%; }
+        .message.from-admin { align-self: flex-end; }
+        .message.from-cliente { align-self: flex-start; }
+        .message-content { padding: 14px 18px; border-radius: 12px; }
+        .message.from-admin .message-content { background: var(--navy); color: white; }
+        .message.from-cliente .message-content { background: var(--bg); border: 0.5px solid var(--border); }
+        .message-time { font-size: 12px; color: var(--text-light); }
+        .chat-input { display: flex; gap: 12px; }
+        .chat-input input { flex: 1; padding: 14px 18px; border: 0.5px solid var(--border); border-radius: 12px; outline: none; }
+        .btn-send { padding: 14px 24px; background: var(--green); color: white; border: none; border-radius: 12px; font-weight: 500; cursor: pointer; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11, 17, 54, 0.5); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--bg); border-radius: 20px; padding: 32px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+        .modal-header h3 { font-size: 24px; font-weight: 600; color: var(--navy); }
+        .btn-close { width: 32px; height: 32px; border: none; background: var(--bg-subtle); border-radius: 8px; cursor: pointer; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+        .notification { position: fixed; top: 20px; right: 20px; z-index: 2000; background: var(--navy); color: white; padding: 16px 24px; border-radius: 12px; max-width: 400px; }
+        .notification.success { background: var(--green); }
+        .notification.error { background: var(--red); }
+        .cliente-link { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; background: var(--blue); color: white; border-radius: 12px; text-decoration: none; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        .empty-state svg { margin-bottom: 16px; opacity: 0.3; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; padding: 20px 16px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .control-group { grid-template-columns: 1fr; }
+            .richiesta-details { grid-template-columns: 1fr; }
+            .clienti-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">Bndo APP</div>
+        <div class="logo-subtitle">👨‍💼 ADMIN PANEL</div>
+        <button class="nav-item active" onclick="showView('clienti')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            Clienti
+        </button>
+        <button class="nav-item" onclick="showView('richieste')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            Nuove Richieste
+            <span class="nav-badge" id="navRichiesteBadge">0</span>
+        </button>
+    </aside>
+
+    <main class="main-content">
+        <!-- VISTA CLIENTI -->
+        <div id="vistaClienti" class="view active">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Clienti</h1>
+                    <p class="subtitle">Gestisci tutti i tuoi clienti e le loro pratiche</p>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Totale Clienti</div>
+                    <div class="stat-value" id="statTotClienti">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pratiche Attive</div>
+                    <div class="stat-value" id="statAttive">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Nuove Richieste</div>
+                    <div class="stat-value" id="statNuove">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Completate</div>
+                    <div class="stat-value" id="statCompletate">0</div>
+                </div>
+            </div>
+            <div class="search-bar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                <input type="text" id="searchClienti" placeholder="Cerca cliente per nome o email..." oninput="searchClienti()">
+            </div>
+            <div class="clienti-grid" id="clientiGrid"></div>
+        </div>
+
+        <!-- VISTA PRATICHE CLIENTE -->
+        <div id="vistaPraticheCliente" class="view">
+            <div class="breadcrumb">
+                <a class="breadcrumb-link" onclick="showView('clienti')">Clienti</a>
+                <span>›</span>
+                <span id="breadcrumbCliente">Cliente</span>
+            </div>
+            <div class="dashboard-header">
+                <div>
+                    <h1 id="nomeClientePratiche"></h1>
+                    <p class="subtitle" id="emailClientePratiche"></p>
+                </div>
+            </div>
+            <div class="pratiche-list" id="praticheClienteList"></div>
+        </div>
+
+        <!-- VISTA NUOVE RICHIESTE -->
+        <div id="vistaRichieste" class="view">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Nuove Richieste</h1>
+                    <p class="subtitle">Gestisci le richieste dei clienti in attesa di approvazione</p>
+                </div>
+            </div>
+            <div class="richieste-list" id="richiesteList"></div>
+        </div>
+
+        <!-- VISTA DETTAGLIO PRATICA -->
+        <div id="vistaDettaglio" class="view">
+            <div class="breadcrumb">
+                <a class="breadcrumb-link" onclick="showView('clienti')">Clienti</a>
+                <span>›</span>
+                <a class="breadcrumb-link" id="breadcrumbClienteDettaglio" onclick="backToPraticheCliente()">Cliente</a>
+                <span>›</span>
+                <span id="breadcrumbPratica">Pratica</span>
+            </div>
+
+            <div class="dettaglio-header">
+                <div class="dettaglio-title">
+                    <div>
+                        <h2 id="dettaglioTitolo"></h2>
+                        <p class="subtitle" id="dettaglioSubtitle"></p>
+                    </div>
+                    <span class="badge" id="dettaglioBadge"></span>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Avanzamento</span>
+                        <span class="progress-percentage" id="dettaglioProgress"></span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="dettaglioProgressBar"></div></div>
+                </div>
+            </div>
+
+            <div class="admin-controls">
+                <h3 class="section-title-small">Controlli Admin</h3>
+                <div class="control-group">
+                    <div class="form-group">
+                        <label>Stato Pratica</label>
+                        <select id="adminStato" onchange="updateStatoPratica()">
+                            <option value="In Lavorazione">In Lavorazione</option>
+                            <option value="In Valutazione">In Valutazione</option>
+                            <option value="In Approvazione">In Approvazione</option>
+                            <option value="Completata">Completata</option>
+                            <option value="Rifiutata">Rifiutata</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Avanzamento (%)</label>
+                        <input type="number" id="adminProgress" min="0" max="100" onchange="updateProgressPratica()">
+                    </div>
+                    <div class="form-group">
+                        <label>Azioni Rapide</label>
+                        <button class="btn-primary" onclick="openRichiediDocModal()" style="width:100%;">+ Richiedi Documento</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('documenti')">Documenti <span id="tabDocBadge"></span></button>
+                <button class="tab-button" onclick="switchTab('chat')">Chat</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="documentiTab" class="tab-pane active">
+                    <div class="documenti-section">
+                        <h3 class="section-title-small">Documenti della Pratica</h3>
+                        <div class="documenti-list" id="documentiListAdmin"></div>
+                    </div>
+                </div>
+
+                <div id="chatTab" class="tab-pane">
+                    <div class="chat-section">
+                        <h3 class="section-title-small">Chat con Cliente</h3>
+                        <div class="chat-messages" id="chatMessagesAdmin"></div>
+                        <div class="chat-input">
+                            <input type="text" id="adminMessageInput" placeholder="Scrivi un messaggio al cliente..." onkeypress="if(event.key==='Enter') sendMessageAdmin()">
+                            <button class="btn-send" onclick="sendMessageAdmin()">Invia</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalRichiediDoc">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Richiedi Nuovo Documento</h3>
+                <button class="btn-close" onclick="closeRichiediDocModal()">✕</button>
+            </div>
+            <form onsubmit="submitRichiediDoc(event)">
+                <div class="form-group">
+                    <label>Nome Documento *</label>
+                    <input type="text" id="nomeDocRichiesto" placeholder="Es: Certificato Residenza" required>
+                </div>
+                <div class="form-group">
+                    <label>Note per il Cliente</label>
+                    <textarea id="noteDocRichiesto" placeholder="Specifica cosa deve contenere il documento..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeRichiediDocModal()">Annulla</button>
+                    <button type="submit" class="btn-primary">Richiedi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <a href="cliente.html" class="cliente-link">👤 Vista Cliente</a>
+
+    <script>
+        function getData() { return JSON.parse(localStorage.getItem('bandozen_data') || '{}'); }
+        function saveData(data) { localStorage.setItem('bandozen_data', JSON.stringify(data)); }
+        let currentPratica = null;
+        let currentCliente = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const data = getData();
+            if (!data.richiesteAdmin) data.richiesteAdmin = [];
+            if (!data.pratiche) data.pratiche = [];
+            if (!data.documenti) data.documenti = [];
+            if (!data.messaggi) data.messaggi = [];
+            if (!data.clienti) {
+                // Genera clienti da pratiche esistenti
+                data.clienti = generaClientiDaPratiche(data);
+            }
+            saveData(data);
+
+            renderClienti();
+            updateStats();
+            updateBadges();
+        });
+
+        // GENERA CLIENTI DA PRATICHE
+        function generaClientiDaPratiche(data) {
+            const clienti = [];
+            const clientiMap = {};
+
+            // Aggiungi cliente default
+            if (!clientiMap[1]) {
+                clienti.push({
+                    id: 1,
+                    nome: 'Mario Rossi',
+                    email: 'mario.rossi@example.com',
+                    telefono: '+39 333 123 4567',
+                    azienda: 'Tech Startup SRL',
+                    createdAt: new Date().toISOString()
+                });
+                clientiMap[1] = true;
+            }
+
+            // Aggiungi clienti dalle pratiche (se hanno email diverse)
+            data.pratiche.forEach(p => {
+                if (p.email && !clientiMap[p.clienteId]) {
+                    clienti.push({
+                        id: p.clienteId,
+                        nome: p.nome || 'Cliente ' + p.clienteId,
+                        email: p.email,
+                        telefono: p.telefono || 'N/A',
+                        azienda: p.nomeProgetto || p.nome,
+                        createdAt: p.createdAt || new Date().toISOString()
+                    });
+                    clientiMap[p.clienteId] = true;
+                }
+            });
+
+            return clienti;
+        }
+
+        // RENDERING CLIENTI
+        function renderClienti() {
+            const data = getData();
+            const clienti = data.clienti || [];
+            const container = document.getElementById('clientiGrid');
+
+            if (clienti.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Nessun Cliente</h3><p>I clienti appariranno quando approvi le richieste</p></div>';
+                return;
+            }
+
+            container.innerHTML = clienti.map(c => {
+                const praticheCliente = data.pratiche.filter(p => p.clienteId === c.id);
+                const praticheAttive = praticheCliente.filter(p => p.stato !== 'Completata' && p.stato !== 'Rifiutata').length;
+                const praticheCompletate = praticheCliente.filter(p => p.stato === 'Completata').length;
+                const docsRichiesti = data.documenti.filter(d => {
+                    const pratica = data.pratiche.find(p => p.id === d.praticaId && p.clienteId === c.id);
+                    return pratica && d.stato === 'richiesto';
+                }).length;
+
+                const ultimaAttivita = praticheCliente.length > 0 ? 
+                    new Date(praticheCliente[0].createdAt).toLocaleDateString('it-IT') : 
+                    new Date(c.createdAt).toLocaleDateString('it-IT');
+
+                return `
+                    <div class="cliente-card" onclick="apriPraticheCliente(${c.id})">
+                        <div class="cliente-header">
+                            <div class="cliente-info">
+                                <h3>${c.nome}</h3>
+                                <p class="cliente-meta">${c.email}</p>
+                                <p class="cliente-meta">${c.telefono}</p>
+                            </div>
+                        </div>
+                        <div style="margin-top:12px;padding:12px;background:var(--bg-subtle);border-radius:10px;">
+                            <strong style="font-size:13px;color:var(--text-light);">Azienda:</strong>
+                            <p style="font-size:14px;color:var(--navy);font-weight:500;margin-top:4px;">${c.azienda}</p>
+                        </div>
+                        <div class="cliente-stats">
+                            <div class="cliente-stat">
+                                <div class="cliente-stat-value">${praticheCliente.length}</div>
+                                <div class="cliente-stat-label">PRATICHE</div>
+                            </div>
+                            <div class="cliente-stat">
+                                <div class="cliente-stat-value">${praticheAttive}</div>
+                                <div class="cliente-stat-label">ATTIVE</div>
+                            </div>
+                            <div class="cliente-stat">
+                                <div class="cliente-stat-value">${docsRichiesti}</div>
+                                <div class="cliente-stat-label">DOC RICHIESTI</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // RICERCA CLIENTI
+        function searchClienti() {
+            const query = document.getElementById('searchClienti').value.toLowerCase();
+            const cards = document.querySelectorAll('.cliente-card');
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        // APRI PRATICHE CLIENTE
+        function apriPraticheCliente(clienteId) {
+            const data = getData();
+            currentCliente = data.clienti.find(c => c.id === clienteId);
+            if (!currentCliente) return;
+
+            document.getElementById('nomeClientePratiche').textContent = currentCliente.nome;
+            document.getElementById('emailClientePratiche').textContent = currentCliente.email + ' • ' + currentCliente.telefono;
+            document.getElementById('breadcrumbCliente').textContent = currentCliente.nome;
+            document.getElementById('breadcrumbClienteDettaglio').textContent = currentCliente.nome;
+
+            renderPraticheCliente(clienteId);
+            showView('praticheCliente');
+        }
+
+        // RENDERING PRATICHE CLIENTE
+        function renderPraticheCliente(clienteId) {
+            const data = getData();
+            const pratiche = data.pratiche.filter(p => p.clienteId === clienteId);
+            const container = document.getElementById('praticheClienteList');
+
+            if (pratiche.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Nessuna pratica per questo cliente</p></div>';
+                return;
+            }
+
+            container.innerHTML = pratiche.map(p => {
+                const docsRichiesti = data.documenti.filter(d => d.praticaId === p.id && d.stato === 'richiesto').length;
+                const docsPending = data.documenti.filter(d => d.praticaId === p.id && d.stato === 'pending').length;
+                const nuoviMsg = data.messaggi.filter(m => m.praticaId === p.id && m.from === 'me').length;
+
+                return `
+                    <div class="pratica-card-admin" onclick="apriDettaglioAdmin(${p.id})">
+                        <div class="richiesta-header">
+                            <div class="richiesta-info">
+                                <h3>${p.nome}</h3>
+                                <p class="richiesta-meta">${p.tipoBando} • ${new Date(p.createdAt).toLocaleDateString('it-IT')}</p>
+                            </div>
+                            <span class="badge ${p.badgeClass}">${p.stato}</span>
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-label"><span>Avanzamento</span><span class="progress-percentage">${p.progress}%</span></div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${p.progress}%"></div></div>
+                        </div>
+                        <div style="display:flex;gap:12px;margin-top:16px;">
+                            ${docsRichiesti > 0 ? '<span class="badge badge-red">' + docsRichiesti + ' doc richiesti</span>' : ''}
+                            ${docsPending > 0 ? '<span class="badge badge-yellow">' + docsPending + ' doc da approvare</span>' : ''}
+                            ${nuoviMsg > 0 ? '<span class="badge badge-blue">' + nuoviMsg + ' nuovi msg</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // BACK TO PRATICHE CLIENTE
+        function backToPraticheCliente() {
+            if (currentCliente) {
+                apriPraticheCliente(currentCliente.id);
+            }
+        }
+
+        // RENDERING RICHIESTE
+        function renderRichieste() {
+            const data = getData();
+            const richieste = data.richiesteAdmin || [];
+            const container = document.getElementById('richiesteList');
+
+            if (richieste.length === 0) {
+                container.innerHTML = '<div class="empty-state"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><h3>Nessuna Nuova Richiesta</h3><p>Le nuove richieste dei clienti appariranno qui</p></div>';
+                return;
+            }
+
+            container.innerHTML = richieste.map(r => `
+                <div class="richiesta-card">
+                    <div class="richiesta-header">
+                        <div class="richiesta-info">
+                            <h3>${r.nomeProgetto}</h3>
+                            <p class="richiesta-meta">${r.tipoBando} • ${r.dataRichiesta}</p>
+                        </div>
+                        <span class="badge badge-new">NUOVA</span>
+                    </div>
+                    <div class="richiesta-details">
+                        <div class="detail-item"><label>Email</label><span>${r.email}</span></div>
+                        <div class="detail-item"><label>Telefono</label><span>${r.telefono}</span></div>
+                        <div class="detail-item"><label>Regione</label><span>${r.regione}</span></div>
+                        <div class="detail-item"><label>Budget</label><span>€ ${r.budget}</span></div>
+                        <div class="detail-item"><label>Stato</label><span>${r.stato}</span></div>
+                    </div>
+                    <div class="richiesta-descrizione">
+                        <strong>Descrizione:</strong>
+                        <p>${r.descrizione}</p>
+                        ${r.note !== 'Nessuna' ? '<p style="margin-top:12px;"><strong>Note:</strong> ' + r.note + '</p>' : ''}
+                    </div>
+                    <div class="richiesta-actions">
+                        <button class="btn-success" onclick="approvaRichiesta(${r.id})">✓ Approva e Crea Pratica</button>
+                        <button class="btn-danger" onclick="rifiutaRichiesta(${r.id})">✗ Rifiuta</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // APPROVA RICHIESTA → CREA PRATICA E CLIENTE
+        function approvaRichiesta(id) {
+            const data = getData();
+            const richiesta = data.richiesteAdmin.find(r => r.id === id);
+            if (!richiesta) return;
+
+            // Crea o trova cliente
+            let cliente = data.clienti.find(c => c.email === richiesta.email);
+            if (!cliente) {
+                cliente = {
+                    id: data.clienti.length + 1,
+                    nome: richiesta.nomeProgetto.split(' ')[0] + ' (Cliente)',
+                    email: richiesta.email,
+                    telefono: richiesta.telefono,
+                    azienda: richiesta.nomeProgetto,
+                    createdAt: new Date().toISOString()
+                };
+                data.clienti.push(cliente);
+            }
+
+            // Crea nuova pratica
+            const nuovaPratica = {
+                id: data.pratiche.length + 1,
+                clienteId: cliente.id,
+                nome: richiesta.nomeProgetto,
+                tipoBando: richiesta.tipoBando,
+                stato: 'In Lavorazione',
+                badgeClass: 'badge-yellow',
+                progress: 5,
+                subtitle: 'Pratica appena creata',
+                email: richiesta.email,
+                telefono: richiesta.telefono,
+                regione: richiesta.regione,
+                budget: richiesta.budget,
+                descrizione: richiesta.descrizione,
+                createdAt: new Date().toISOString()
+            };
+
+            data.pratiche.push(nuovaPratica);
+
+            // Documenti base
+            ['Documento Identità', 'Codice Fiscale', 'Visura Camerale', 'Business Plan'].forEach(nomeDoc => {
+                data.documenti.push({
+                    id: data.documenti.length + 1,
+                    praticaId: nuovaPratica.id,
+                    nome: nomeDoc,
+                    stato: 'richiesto'
+                });
+            });
+
+            // Messaggio benvenuto
+            data.messaggi.push({
+                id: data.messaggi.length + 1,
+                praticaId: nuovaPratica.id,
+                from: 'team',
+                text: `Ciao! La tua pratica "${nuovaPratica.nome}" è stata approvata. Ti chiediamo di caricare i documenti richiesti.`,
+                time: new Date().toLocaleDateString('it-IT') + ' • ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})
+            });
+
+            // Rimuovi richiesta
+            data.richiesteAdmin = data.richiesteAdmin.filter(r => r.id !== id);
+
+            saveData(data);
+            renderRichieste();
+            renderClienti();
+            updateStats();
+            updateBadges();
+            showNotification('✅ Richiesta approvata! Cliente e pratica creati.', 'success');
+        }
+
+        // RIFIUTA RICHIESTA
+        function rifiutaRichiesta(id) {
+            if (!confirm('Sei sicuro di voler rifiutare questa richiesta?')) return;
+            const data = getData();
+            data.richiesteAdmin = data.richiesteAdmin.filter(r => r.id !== id);
+            saveData(data);
+            renderRichieste();
+            updateStats();
+            updateBadges();
+            showNotification('Richiesta rifiutata', 'error');
+        }
+
+        // APRI DETTAGLIO PRATICA
+        function apriDettaglioAdmin(id) {
+            const data = getData();
+            currentPratica = data.pratiche.find(p => p.id === id);
+            if (!currentPratica) return;
+
+            document.getElementById('dettaglioTitolo').textContent = currentPratica.nome;
+            document.getElementById('dettaglioSubtitle').textContent = currentPratica.tipoBando + ' • ' + currentPratica.email;
+            document.getElementById('dettaglioBadge').textContent = currentPratica.stato;
+            document.getElementById('dettaglioBadge').className = 'badge ' + currentPratica.badgeClass;
+            document.getElementById('dettaglioProgress').textContent = currentPratica.progress + '%';
+            document.getElementById('dettaglioProgressBar').style.width = currentPratica.progress + '%';
+            document.getElementById('adminStato').value = currentPratica.stato;
+            document.getElementById('adminProgress').value = currentPratica.progress;
+            document.getElementById('breadcrumbPratica').textContent = currentPratica.nome;
+
+            loadDocumentiAdmin(id);
+            loadChatAdmin(id);
+            showView('dettaglio');
+        }
+
+        // AGGIORNA STATO
+        function updateStatoPratica() {
+            const nuovoStato = document.getElementById('adminStato').value;
+            const data = getData();
+            const pratica = data.pratiche.find(p => p.id === currentPratica.id);
+            if (!pratica) return;
+
+            pratica.stato = nuovoStato;
+
+            if (nuovoStato === 'Completata') {
+                pratica.badgeClass = 'badge-green';
+                pratica.progress = 100;
+                document.getElementById('adminProgress').value = 100;
+            } else if (nuovoStato === 'Rifiutata') {
+                pratica.badgeClass = 'badge-red';
+            } else if (nuovoStato === 'In Approvazione') {
+                pratica.badgeClass = 'badge-blue';
+            } else {
+                pratica.badgeClass = 'badge-yellow';
+            }
+
+            pratica.subtitle = 'Stato: ' + nuovoStato;
+            saveData(data);
+
+            document.getElementById('dettaglioBadge').textContent = nuovoStato;
+            document.getElementById('dettaglioBadge').className = 'badge ' + pratica.badgeClass;
+
+            if (pratica.progress === 100) {
+                document.getElementById('dettaglioProgress').textContent = '100%';
+                document.getElementById('dettaglioProgressBar').style.width = '100%';
+            }
+
+            showNotification('✅ Stato aggiornato', 'success');
+        }
+
+        // AGGIORNA PROGRESS
+        function updateProgressPratica() {
+            const nuovoProgress = parseInt(document.getElementById('adminProgress').value);
+            if (nuovoProgress < 0 || nuovoProgress > 100) return;
+
+            const data = getData();
+            const pratica = data.pratiche.find(p => p.id === currentPratica.id);
+            if (!pratica) return;
+
+            pratica.progress = nuovoProgress;
+
+            if (nuovoProgress === 100) {
+                pratica.stato = 'Completata';
+                pratica.badgeClass = 'badge-green';
+                document.getElementById('adminStato').value = 'Completata';
+                document.getElementById('dettaglioBadge').textContent = 'Completata';
+                document.getElementById('dettaglioBadge').className = 'badge badge-green';
+            }
+
+            saveData(data);
+            document.getElementById('dettaglioProgress').textContent = nuovoProgress + '%';
+            document.getElementById('dettaglioProgressBar').style.width = nuovoProgress + '%';
+            showNotification('✅ Avanzamento aggiornato', 'success');
+        }
+
+        // DOCUMENTI
+        function loadDocumentiAdmin(praticaId) {
+            const data = getData();
+            const docs = data.documenti.filter(d => d.praticaId === praticaId);
+            const container = document.getElementById('documentiListAdmin');
+
+            container.innerHTML = docs.map(d => `
+                <div class="documento-item">
+                    <div class="documento-info"><div><strong>${d.nome}</strong></div></div>
+                    <div class="documento-actions">
+                        <span class="status-${d.stato}">${d.stato === 'approvato' ? '✓ Approvato' : d.stato === 'pending' ? '⏱ Da Approvare' : '⚠ Richiesto'}</span>
+                        ${d.stato === 'pending' ? `<button class="btn-success" style="padding:8px 16px;" onclick="approvaDocumento(${d.id})">✓</button><button class="btn-danger" style="padding:8px 16px;" onclick="rifiutaDocumento(${d.id})">✗</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            const pending = docs.filter(d => d.stato === 'pending').length;
+            document.getElementById('tabDocBadge').textContent = pending > 0 ? ` (${pending})` : '';
+        }
+
+        function approvaDocumento(docId) {
+            const data = getData();
+            const doc = data.documenti.find(d => d.id === docId);
+            if (!doc) return;
+            doc.stato = 'approvato';
+            data.messaggi.push({
+                id: data.messaggi.length + 1,
+                praticaId: doc.praticaId,
+                from: 'team',
+                text: `✅ Il documento "${doc.nome}" è stato approvato!`,
+                time: new Date().toLocaleDateString('it-IT') + ' • ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})
+            });
+            saveData(data);
+            loadDocumentiAdmin(currentPratica.id);
+            updateStats();
+            showNotification('✅ Documento approvato', 'success');
+        }
+
+        function rifiutaDocumento(docId) {
+            const data = getData();
+            const doc = data.documenti.find(d => d.id === docId);
+            if (!doc) return;
+            doc.stato = 'richiesto';
+            data.messaggi.push({
+                id: data.messaggi.length + 1,
+                praticaId: doc.praticaId,
+                from: 'team',
+                text: `⚠️ Il documento "${doc.nome}" è stato rifiutato. Caricalo nuovamente.`,
+                time: new Date().toLocaleDateString('it-IT') + ' • ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})
+            });
+            saveData(data);
+            loadDocumentiAdmin(currentPratica.id);
+            showNotification('Documento rifiutato', 'error');
+        }
+
+        // RICHIEDI DOCUMENTO
+        function openRichiediDocModal() { document.getElementById('modalRichiediDoc').classList.add('active'); }
+        function closeRichiediDocModal() {
+            document.getElementById('modalRichiediDoc').classList.remove('active');
+            document.getElementById('nomeDocRichiesto').value = '';
+            document.getElementById('noteDocRichiesto').value = '';
+        }
+
+        function submitRichiediDoc(event) {
+            event.preventDefault();
+            const nome = document.getElementById('nomeDocRichiesto').value;
+            const note = document.getElementById('noteDocRichiesto').value;
+            const data = getData();
+
+            data.documenti.push({
+                id: data.documenti.length + 1,
+                praticaId: currentPratica.id,
+                nome: nome,
+                stato: 'richiesto'
+            });
+
+            const msgText = `📄 Ti è stato richiesto: "${nome}"` + (note ? '. ' + note : '');
+            data.messaggi.push({
+                id: data.messaggi.length + 1,
+                praticaId: currentPratica.id,
+                from: 'team',
+                text: msgText,
+                time: new Date().toLocaleDateString('it-IT') + ' • ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})
+            });
+
+            saveData(data);
+            loadDocumentiAdmin(currentPratica.id);
+            closeRichiediDocModal();
+            showNotification('✅ Documento richiesto', 'success');
+        }
+
+        // CHAT
+        function loadChatAdmin(praticaId) {
+            const data = getData();
+            const msgs = data.messaggi.filter(m => m.praticaId === praticaId);
+            const container = document.getElementById('chatMessagesAdmin');
+            container.innerHTML = msgs.map(m => `
+                <div class="message from-${m.from === 'team' ? 'admin' : 'cliente'}">
+                    <div class="message-content">${m.text}</div>
+                    <div class="message-time">${m.time}</div>
+                </div>
+            `).join('');
+            container.scrollTop = 999999;
+        }
+
+        function sendMessageAdmin() {
+            const input = document.getElementById('adminMessageInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const data = getData();
+            data.messaggi.push({
+                id: data.messaggi.length + 1,
+                praticaId: currentPratica.id,
+                from: 'team',
+                text: text,
+                time: new Date().toLocaleDateString('it-IT') + ' • ' + new Date().toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})
+            });
+            saveData(data);
+            input.value = '';
+            loadChatAdmin(currentPratica.id);
+            showNotification('✅ Messaggio inviato', 'success');
+        }
+
+        // STATS
+        function updateStats() {
+            const data = getData();
+            document.getElementById('statTotClienti').textContent = (data.clienti || []).length;
+            document.getElementById('statNuove').textContent = (data.richiesteAdmin || []).length;
+            document.getElementById('statAttive').textContent = data.pratiche.filter(p => p.stato !== 'Completata' && p.stato !== 'Rifiutata').length;
+            document.getElementById('statCompletate').textContent = data.pratiche.filter(p => p.stato === 'Completata').length;
+        }
+
+        function updateBadges() {
+            const data = getData();
+            const badge = document.getElementById('navRichiesteBadge');
+            const count = (data.richiesteAdmin || []).length;
+            badge.textContent = count;
+            badge.style.display = count === 0 ? 'none' : 'inline-block';
+        }
+
+        // NAVIGATION
+        function showView(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            if (view === 'clienti') {
+                document.getElementById('vistaClienti').classList.add('active');
+                document.querySelectorAll('.nav-item')[0].classList.add('active');
+                renderClienti();
+                updateStats();
+            } else if (view === 'richieste') {
+                document.getElementById('vistaRichieste').classList.add('active');
+                document.querySelectorAll('.nav-item')[1].classList.add('active');
+                renderRichieste();
+            } else if (view === 'praticheCliente') {
+                document.getElementById('vistaPraticheCliente').classList.add('active');
+            } else if (view === 'dettaglio') {
+                document.getElementById('vistaDettaglio').classList.add('active');
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        function showNotification(msg, type) {
+            const notif = document.createElement('div');
+            notif.className = 'notification ' + type;
+            notif.textContent = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => { notif.style.opacity = '0'; setTimeout(() => notif.remove(), 300); }, 3000);
+        }
+
+        document.getElementById('modalRichiediDoc').addEventListener('click', e => { 
+            if (e.target === e.currentTarget) closeRichiediDocModal(); 
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cliente - Bndo APP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --navy: #0B1136; --green: #22C55F; --blue: #3B82F6; --red: #DC2626; --orange: #F59E0B;
+            --text: #0B1136; --text-light: #64748B; --border: rgba(11, 17, 54, 0.06);
+            --bg: #FFFFFF; --bg-subtle: #FAFBFC;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--bg); border-right: 0.5px solid var(--border); padding: 24px; position: fixed; height: 100vh; overflow-y: auto; }
+        .logo { font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+        .user-info { font-size: 13px; color: var(--text-light); margin-bottom: 32px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-light); font-weight: 500; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: all 0.3s; margin-bottom: 8px; }
+        .nav-item:hover { background: var(--bg-subtle); color: var(--text); }
+        .nav-item.active { background: var(--navy); color: white; }
+        .main-content { flex: 1; margin-left: 280px; padding: 40px 48px; }
+        .dashboard-header h1 { font-size: 40px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+        .subtitle { color: var(--text-light); font-size: 17px; margin-bottom: 32px; }
+        .alert { display: flex; gap: 16px; padding: 20px 24px; border-radius: 16px; border: 0.5px solid var(--border); margin-bottom: 16px; cursor: pointer; transition: all 0.3s; }
+        .alert:hover { box-shadow: 0 8px 24px rgba(11, 17, 54, 0.08); transform: translateY(-2px); }
+        .alert-warning { background: rgba(254, 243, 242, 0.5); }
+        .alert-info { background: rgba(239, 246, 255, 0.5); }
+        .alert strong { display: block; color: var(--navy); font-weight: 600; margin-bottom: 4px; }
+        .alert p { color: var(--text-light); font-size: 14px; }
+        .search-bar { display: flex; gap: 16px; margin-bottom: 32px; background: var(--bg); padding: 12px 20px; border-radius: 12px; border: 0.5px solid var(--border); }
+        .search-bar input { flex: 1; border: none; outline: none; font-size: 15px; background: transparent; }
+        .btn-primary { padding: 12px 28px; background: var(--navy); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(11, 17, 54, 0.15); }
+        .pratiche-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px; }
+        .pratica-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 32px 24px; cursor: pointer; transition: all 0.4s; }
+        .pratica-card:hover { border-color: rgba(34, 197, 95, 0.2); box-shadow: 0 12px 40px rgba(11, 17, 54, 0.08); transform: translateY(-4px); }
+        .pratica-card h3 { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+        .badge { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .badge-blue { background: rgba(239, 246, 255, 0.8); color: var(--blue); }
+        .badge-yellow { background: rgba(254, 243, 199, 0.8); color: var(--orange); }
+        .badge-green { background: rgba(209, 250, 229, 0.8); color: var(--green); }
+        .progress-section { margin-top: 20px; padding-top: 20px; border-top: 0.5px solid var(--border); }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .progress-percentage { font-size: 32px; font-weight: 300; color: var(--navy); }
+        .progress-bar { height: 6px; background: var(--bg-subtle); border-radius: 8px; }
+        .progress-fill { height: 100%; background: var(--green); border-radius: 8px; transition: width 0.5s; }
+        .pratica-footer { display: flex; gap: 12px; margin-top: 20px; padding-top: 20px; border-top: 0.5px solid var(--border); }
+        .btn-details { flex: 1; padding: 12px 20px; background: var(--navy); color: white; border: none; border-radius: 12px; font-weight: 500; cursor: pointer; }
+        .btn-details:hover { background: var(--green); }
+        .view { display: none; }
+        .view.active { display: block; }
+        .back-button { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-subtle); border: 0.5px solid var(--border); border-radius: 12px; cursor: pointer; margin-bottom: 24px; }
+        .dettaglio-header { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 24px; }
+        .dettaglio-title { display: flex; justify-content: space-between; margin-bottom: 24px; }
+        .dettaglio-title h2 { font-size: 32px; font-weight: 600; color: var(--navy); }
+        .tabs { display: flex; gap: 8px; background: var(--bg-subtle); padding: 6px; border-radius: 12px; }
+        .tab-button { flex: 1; padding: 12px 20px; background: transparent; border: none; border-radius: 8px; font-size: 15px; font-weight: 500; color: var(--text-light); cursor: pointer; }
+        .tab-button.active { background: var(--navy); color: white; }
+        .tab-content { margin-top: 24px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+        .documenti-section, .chat-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: 16px; padding: 32px; }
+        .section-title { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 20px; }
+        .documenti-list { display: flex; flex-direction: column; gap: 16px; }
+        .documento-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-subtle); border-radius: 12px; cursor: pointer; }
+        .documento-info { display: flex; gap: 16px; flex: 1; }
+        .documento-status { padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+        .status-approvato { background: rgba(209, 250, 229, 0.8); color: var(--green); }
+        .status-pending { background: rgba(254, 243, 199, 0.8); color: var(--orange); }
+        .status-richiesto { background: rgba(254, 243, 242, 0.8); color: var(--red); }
+        .upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; margin-top: 16px; }
+        .upload-area:hover { border-color: var(--green); background: rgba(34, 197, 95, 0.02); }
+        .chat-messages { display: flex; flex-direction: column; gap: 16px; max-height: 400px; overflow-y: auto; margin-bottom: 20px; padding: 20px; background: var(--bg-subtle); border-radius: 12px; }
+        .message { display: flex; flex-direction: column; gap: 8px; max-width: 70%; }
+        .message.from-me { align-self: flex-end; }
+        .message.from-team { align-self: flex-start; }
+        .message-content { padding: 14px 18px; border-radius: 12px; }
+        .message.from-me .message-content { background: var(--navy); color: white; }
+        .message.from-team .message-content { background: var(--bg); border: 0.5px solid var(--border); }
+        .message-time { font-size: 12px; color: var(--text-light); }
+        .chat-input { display: flex; gap: 12px; }
+        .chat-input input { flex: 1; padding: 14px 18px; border: 0.5px solid var(--border); border-radius: 12px; outline: none; }
+        .btn-send { padding: 14px 24px; background: var(--green); color: white; border: none; border-radius: 12px; font-weight: 500; cursor: pointer; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11, 17, 54, 0.5); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--bg); border-radius: 20px; padding: 32px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+        .modal-header h3 { font-size: 24px; font-weight: 600; color: var(--navy); }
+        .btn-close { width: 32px; height: 32px; border: none; background: var(--bg-subtle); border-radius: 8px; cursor: pointer; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+        .required { color: var(--red); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border: 0.5px solid var(--border); border-radius: 12px; font-size: 15px; outline: none; font-family: inherit; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-help { font-size: 13px; color: var(--text-light); margin-top: 4px; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+        .btn-secondary { flex: 1; padding: 12px 24px; background: var(--bg-subtle); border: none; border-radius: 12px; font-weight: 500; cursor: pointer; }
+        .notification { position: fixed; top: 20px; right: 20px; z-index: 2000; background: var(--navy); color: white; padding: 16px 24px; border-radius: 12px; max-width: 400px; }
+        .notification.success { background: var(--green); }
+        .notification.error { background: var(--red); }
+        .admin-link { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; background: var(--green); color: white; border-radius: 12px; text-decoration: none; }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .main-content { margin-left: 0; padding: 20px 16px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">Bndo APP</div>
+        <div class="user-info">Mario Rossi</div>
+        <button class="nav-item active" onclick="showView('lista')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            Le Tue Pratiche
+        </button>
+    </aside>
+
+    <main class="main-content">
+        <div id="vistaLista" class="view active">
+            <header class="dashboard-header">
+                <h1>Le Tue Pratiche</h1>
+                <p class="subtitle">Gestisci e monitora tutte le tue richieste Invitalia</p>
+            </header>
+            <div id="alertsContainer"></div>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Cerca pratiche..." oninput="searchPratiche()">
+                <button class="btn-primary" onclick="openNuovaPraticaModal()">+ Nuova Richiesta</button>
+            </div>
+            <div class="pratiche-grid" id="praticheGrid"></div>
+        </div>
+
+        <div id="vistaDettaglio" class="view">
+            <button class="back-button" onclick="showView('lista')">← Torna alle pratiche</button>
+            <div class="dettaglio-header">
+                <div class="dettaglio-title">
+                    <div>
+                        <h2 id="dettaglioTitolo"></h2>
+                        <p class="subtitle" id="dettaglioSubtitle"></p>
+                    </div>
+                    <span class="badge" id="dettaglioBadge"></span>
+                </div>
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Avanzamento</span>
+                        <span class="progress-percentage" id="dettaglioProgress"></span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" id="dettaglioProgressBar"></div></div>
+                </div>
+            </div>
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('documenti')">Documenti <span id="tabDocBadge"></span></button>
+                <button class="tab-button" onclick="switchTab('chat')">Chat <span id="tabChatBadge"></span></button>
+            </div>
+            <div class="tab-content">
+                <div id="documentiTab" class="tab-pane active">
+                    <div class="documenti-section">
+                        <h3 class="section-title">Documenti della Pratica</h3>
+                        <div class="documenti-list" id="documentiList"></div>
+                        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                            <p><strong>Clicca per caricare</strong> un documento</p>
+                            <p style="font-size: 13px; margin-top: 8px;">PDF, JPG, PNG fino a 10MB</p>
+                        </div>
+                        <input type="file" id="fileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadFile(event)">
+                    </div>
+                </div>
+                <div id="chatTab" class="tab-pane">
+                    <div class="chat-section">
+                        <h3 class="section-title">Chat con il Consulente</h3>
+                        <div class="chat-messages" id="chatMessages"></div>
+                        <div class="chat-input">
+                            <input type="text" id="messageInput" placeholder="Scrivi un messaggio..." onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button class="btn-send" onclick="sendMessage()">Invia</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalNuovaPratica">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Richiedi Nuova Pratica</h3>
+                <button class="btn-close" onclick="closeNuovaPraticaModal()">✕</button>
+            </div>
+            <form onsubmit="submitNuovaPratica(event)">
+                <div class="form-group">
+                    <label>Tipo di Bando <span class="required">*</span></label>
+                    <select id="tipoBando" required>
+                        <option value="">Seleziona</option>
+                        <option value="Smart & Start Italia">Smart & Start Italia</option>
+                        <option value="Resto al Sud">Resto al Sud</option>
+                        <option value="Nuove Imprese a Tasso Zero">Nuove Imprese a Tasso Zero</option>
+                        <option value="Autoimpiego">Autoimpiego</option>
+                        <option value="Altro">Altro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nome Progetto/Azienda <span class="required">*</span></label>
+                    <input type="text" id="nomeProgetto" placeholder="Es: Startup Innovativa" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" id="emailCliente" placeholder="tua@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Telefono <span class="required">*</span></label>
+                        <input type="tel" id="telefonoCliente" placeholder="+39 333 1234567" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Regione <span class="required">*</span></label>
+                        <select id="regioneProgetto" required>
+                            <option value="">Seleziona</option>
+                            <option value="Lombardia">Lombardia</option>
+                            <option value="Lazio">Lazio</option>
+                            <option value="Campania">Campania</option>
+                            <option value="Sicilia">Sicilia</option>
+                            <option value="Puglia">Puglia</option>
+                            <option value="Calabria">Calabria</option>
+                            <option value="Altra">Altra</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Budget Previsto (€)</label>
+                        <input type="number" id="budgetProgetto" placeholder="50000" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrizione Progetto <span class="required">*</span></label>
+                    <textarea id="descrizioneProgetto" placeholder="Descrivi il progetto, obiettivi e attività..." required></textarea>
+                    <p class="form-help">Minimo 50 caratteri</p>
+                </div>
+                <div class="form-group">
+                    <label>Note Aggiuntive</label>
+                    <textarea id="noteProgetto" placeholder="Altre informazioni utili..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeNuovaPraticaModal()">Annulla</button>
+                    <button type="submit" class="btn-primary">Invia Richiesta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <a href="admin.html" class="admin-link">👨‍💼 Admin</a>
+
+    <script>
+        function initData() {
+            if (!localStorage.getItem('bandozen_data')) {
+                localStorage.setItem('bandozen_data', JSON.stringify({
+                    pratiche: [
+                        { id: 1, nome: "Smart & Start Italia", stato: "In Approvazione", badgeClass: "badge-blue", progress: 60, subtitle: "Pratica in valutazione" },
+                        { id: 2, nome: "Resto al Sud", stato: "In Valutazione", badgeClass: "badge-yellow", progress: 45, subtitle: "Documentazione in revisione" },
+                        { id: 3, nome: "Nuove Imprese", stato: "Completata", badgeClass: "badge-green", progress: 100, subtitle: "Approvata" }
+                    ],
+                    documenti: [
+                        { id: 1, praticaId: 1, nome: "Documento Identità", stato: "approvato" },
+                        { id: 2, praticaId: 1, nome: "Visura Camerale", stato: "pending" },
+                        { id: 3, praticaId: 1, nome: "Business Plan", stato: "richiesto" },
+                        { id: 4, praticaId: 1, nome: "Bilancio 2024", stato: "richiesto" }
+                    ],
+                    messaggi: [
+                        { id: 1, praticaId: 1, from: 'team', text: 'Documentazione ricevuta', time: '22/01/2025 • 10:30' },
+                        { id: 2, praticaId: 1, from: 'me', text: 'Quanto tempo serve?', time: '22/01/2025 • 11:15' },
+                        { id: 3, praticaId: 1, from: 'team', text: '5-7 giorni lavorativi', time: '22/01/2025 • 11:30' }
+                    ],
+                    richiesteAdmin: []
+                }));
+            }
+        }
+
+        function getData() { return JSON.parse(localStorage.getItem('bandozen_data')); }
+        function saveData(data) { localStorage.setItem('bandozen_data', JSON.stringify(data)); }
+        let currentPratica = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initData();
+            renderPratiche();
+            updateAlerts();
+        });
+
+        function renderPratiche() {
+            const data = getData();
+            document.getElementById('praticheGrid').innerHTML = data.pratiche.map(p => `
+                <div class="pratica-card" onclick="apriDettaglio(${p.id})">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:20px;">
+                        <h3>${p.nome}</h3>
+                        <span class="badge ${p.badgeClass}">${p.stato}</span>
+                    </div>
+                    <div class="progress-section">
+                        <div class="progress-label"><span>Avanzamento</span><span class="progress-percentage">${p.progress}%</span></div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${p.progress}%"></div></div>
+                    </div>
+                    <div class="pratica-footer">
+                        <button class="btn-details" onclick="event.stopPropagation();apriDettaglio(${p.id})">Dettagli</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function apriDettaglio(id) {
+            const data = getData();
+            currentPratica = data.pratiche.find(p => p.id === id);
+            if (!currentPratica) return;
+            document.getElementById('dettaglioTitolo').textContent = currentPratica.nome;
+            document.getElementById('dettaglioSubtitle').textContent = currentPratica.subtitle;
+            document.getElementById('dettaglioBadge').textContent = currentPratica.stato;
+            document.getElementById('dettaglioBadge').className = 'badge ' + currentPratica.badgeClass;
+            document.getElementById('dettaglioProgress').textContent = currentPratica.progress + '%';
+            document.getElementById('dettaglioProgressBar').style.width = currentPratica.progress + '%';
+            loadDocumenti(id);
+            loadChat(id);
+            showView('dettaglio');
+        }
+
+        function loadDocumenti(praticaId) {
+            const docs = getData().documenti.filter(d => d.praticaId === praticaId);
+            document.getElementById('documentiList').innerHTML = docs.map(d => `
+                <div class="documento-item">
+                    <div class="documento-info"><div><strong>${d.nome}</strong></div></div>
+                    <span class="documento-status status-${d.stato}">${d.stato === 'approvato' ? '✓ Approvato' : d.stato === 'pending' ? '⏱ In Revisione' : '⚠ Richiesto'}</span>
+                </div>
+            `).join('');
+            const richiesti = docs.filter(d => d.stato === 'richiesto').length;
+            document.getElementById('tabDocBadge').textContent = richiesti > 0 ? ` (${richiesti})` : '';
+        }
+
+        function uploadFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            if (file.size > 10485760) { showNotification('❌ File troppo grande', 'error'); return; }
+            const data = getData();
+            const doc = data.documenti.find(d => d.praticaId === currentPratica.id && d.stato === 'richiesto');
+            if (doc) {
+                doc.stato = 'pending';
+                saveData(data);
+                loadDocumenti(currentPratica.id);
+                updateAlerts();
+                showNotification('✅ File caricato!', 'success');
+            }
+            event.target.value = '';
+        }
+
+        function loadChat(praticaId) {
+            const msgs = getData().messaggi.filter(m => m.praticaId === praticaId);
+            document.getElementById('chatMessages').innerHTML = msgs.map(m => `
+                <div class="message from-${m.from}"><div class="message-content">${m.text}</div><div class="message-time">${m.time}</div></div>
+            `).join('');
+            document.getElementById('chatMessages').scrollTop = 999999;
+            document.getElementById('tabChatBadge').textContent = msgs.length > 0 ? ` (${msgs.length})` : '';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) { showNotification('⚠ Scrivi un messaggio', 'error'); return; }
+            const data = getData();
+            const now = new Date();
+            data.messaggi.push({
+                id: data.messaggi.length + 1,
+                praticaId: currentPratica.id,
+                from: 'me',
+                text: text,
+                time: now.toLocaleDateString('it-IT') + ' • ' + now.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'})
+            });
+            saveData(data);
+            input.value = '';
+            loadChat(currentPratica.id);
+            showNotification('✅ Messaggio inviato', 'success');
+        }
+
+        function updateAlerts() {
+            const data = getData();
+            const docs = data.documenti.filter(d => d.stato === 'richiesto').length;
+            const msgs = data.messaggi.filter(m => m.from === 'team').length;
+            let html = '';
+            if (docs > 0) html += `<div class="alert alert-warning" onclick="goToDocumentiMancanti()"><div><strong>${docs} Documenti Richiesti</strong><p>Carica i documenti mancanti. Click per vedere quali.</p></div></div>`;
+            if (msgs > 0) html += `<div class="alert alert-info" onclick="goToChat()"><div><strong>${msgs} Nuovi Messaggi</strong><p>Il consulente ha inviato aggiornamenti. Click per leggere.</p></div></div>`;
+            document.getElementById('alertsContainer').innerHTML = html;
+        }
+
+        function goToDocumentiMancanti() {
+            const data = getData();
+            const firstDoc = data.documenti.find(d => d.stato === 'richiesto');
+            if (firstDoc) {
+                apriDettaglio(firstDoc.praticaId);
+                switchTab('documenti');
+                showNotification('📄 Vedi i documenti richiesti qui sotto', 'success');
+            }
+        }
+
+        function goToChat() {
+            const data = getData();
+            const firstMsg = data.messaggi.find(m => m.from === 'team');
+            if (firstMsg) {
+                apriDettaglio(firstMsg.praticaId);
+                switchTab('chat');
+                showNotification('💬 Leggi i nuovi messaggi', 'success');
+            }
+        }
+
+        function searchPratiche() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.pratica-card').forEach(card => {
+                card.style.display = card.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+            });
+        }
+
+        function openNuovaPraticaModal() { document.getElementById('modalNuovaPratica').classList.add('active'); }
+        function closeNuovaPraticaModal() { 
+            document.getElementById('modalNuovaPratica').classList.remove('active');
+            document.querySelectorAll('form input, form select, form textarea').forEach(el => el.value = '');
+        }
+
+        function submitNuovaPratica(event) {
+            event.preventDefault();
+            const descrizione = document.getElementById('descrizioneProgetto').value;
+            if (descrizione.length < 50) {
+                showNotification('⚠ Descrizione troppo breve (minimo 50 caratteri)', 'error');
+                return;
+            }
+
+            const richiesta = {
+                id: Date.now(),
+                tipoBando: document.getElementById('tipoBando').value,
+                nomeProgetto: document.getElementById('nomeProgetto').value,
+                email: document.getElementById('emailCliente').value,
+                telefono: document.getElementById('telefonoCliente').value,
+                regione: document.getElementById('regioneProgetto').value,
+                budget: document.getElementById('budgetProgetto').value || 'Non specificato',
+                descrizione: descrizione,
+                note: document.getElementById('noteProgetto').value || 'Nessuna',
+                dataRichiesta: new Date().toLocaleDateString('it-IT'),
+                stato: 'In Attesa di Approvazione'
+            };
+
+            const data = getData();
+            if (!data.richiesteAdmin) data.richiesteAdmin = [];
+            data.richiesteAdmin.push(richiesta);
+            saveData(data);
+
+            closeNuovaPraticaModal();
+            showNotification('✅ Richiesta inviata! Riceverai una risposta entro 24h.', 'success');
+        }
+
+        function showView(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            if (view === 'lista') {
+                document.getElementById('vistaLista').classList.add('active');
+                renderPratiche();
+                updateAlerts();
+            } else {
+                document.getElementById('vistaDettaglio').classList.add('active');
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+
+        function showNotification(msg, type) {
+            const notif = document.createElement('div');
+            notif.className = 'notification ' + type;
+            notif.textContent = msg;
+            document.body.appendChild(notif);
+            setTimeout(() => { notif.style.opacity = '0'; setTimeout(() => notif.remove(), 300); }, 3000);
+        }
+
+        document.getElementById('modalNuovaPratica').addEventListener('click', e => { if (e.target === e.currentTarget) closeNuovaPraticaModal(); });
+    </script>
+</body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bndo APP - Dashboard Pratiche Invitalia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy: #0B1136;
+            --green: #22C55F;
+            --blue: #3B82F6;
+            --red: #DC2626;
+            --text: #0B1136;
+            --text-light: #64748B;
+            --border: rgba(11, 17, 54, 0.06);
+            --bg: #FFFFFF;
+            --bg-subtle: #FAFBFC;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .logo {
+            font-size: 56px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 16px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .tagline {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--navy), var(--green));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--navy), var(--blue));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .card-icon svg {
+            width: 40px;
+            height: 40px;
+            stroke: white;
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 12px;
+        }
+
+        .card-description {
+            font-size: 16px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .card-features {
+            list-style: none;
+            margin-bottom: 32px;
+        }
+
+        .card-features li {
+            font-size: 14px;
+            color: var(--text);
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+        }
+
+        .card-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--green);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .card-button {
+            display: block;
+            width: 100%;
+            padding: 16px 32px;
+            background: var(--navy);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .card-button:hover {
+            background: var(--green);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(34, 197, 95, 0.3);
+        }
+
+        .card.admin .card-icon {
+            background: linear-gradient(135deg, var(--green), #16a34a);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            animation: fadeIn 1s ease 0.5s both;
+        }
+
+        .footer-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+        }
+
+        .footer-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-link:hover {
+            opacity: 0.8;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 42px;
+            }
+
+            .tagline {
+                font-size: 16px;
+            }
+
+            .cards-container {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .card {
+                padding: 36px 28px;
+            }
+
+            .card-icon {
+                width: 64px;
+                height: 64px;
+            }
+
+            .card-icon svg {
+                width: 32px;
+                height: 32px;
+            }
+
+            .card-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">Bndo APP</h1>
+            <p class="tagline">Gestione Pratiche Invitalia - Semplice, Veloce, Efficace</p>
+        </div>
+
+        <div class="cards-container">
+            <!-- CARD CLIENTE -->
+            <div class="card" onclick="window.location.href='cliente.html'">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </div>
+                <h2 class="card-title">Area Cliente</h2>
+                <p class="card-description">
+                    Accedi alla tua dashboard personale per gestire le tue pratiche Invitalia
+                </p>
+                <ul class="card-features">
+                    <li>Visualizza stato pratiche in tempo reale</li>
+                    <li>Carica documenti richiesti</li>
+                    <li>Chat diretta con il consulente</li>
+                    <li>Richiedi nuove pratiche</li>
+                    <li>Notifiche e aggiornamenti automatici</li>
+                </ul>
+                <a href="cliente.html" class="card-button">Accedi come Cliente</a>
+            </div>
+
+            <!-- CARD ADMIN -->
+            <div class="card admin" onclick="window.location.href='admin.html'">
+                <div class="card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <h2 class="card-title">Area Admin</h2>
+                <p class="card-description">
+                    Pannello amministratore per gestire clienti, pratiche e documenti
+                </p>
+                <ul class="card-features">
+                    <li>Gestisci lista clienti completa</li>
+                    <li>Approva/rifiuta nuove richieste</li>
+                    <li>Controlla stato pratiche e avanzamento</li>
+                    <li>Approva documenti caricati</li>
+                    <li>Chat bidirezionale con clienti</li>
+                </ul>
+                <a href="admin.html" class="card-button">Accedi come Admin</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p class="footer-text">Sistema di gestione pratiche per bandi Invitalia</p>
+            <div class="footer-links">
+                <a href="https://github.com/nataleletteriatornatora-art/Bndo-demo" class="footer-link" target="_blank">📂 GitHub</a>
+                <a href="README.md" class="footer-link">📖 Documentazione</a>
+                <a href="#" class="footer-link" onclick="showInfo(); return false;">ℹ️ Info</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showInfo() {
+            alert('Bndo APP v2.0\n\nSistema di gestione pratiche Invitalia\n\nFunzionalità:\n- Dashboard Cliente\n- Dashboard Admin\n- Gestione documenti\n- Chat bidirezionale\n- Sistema notifiche\n\nTecnologie: HTML5, CSS3, JavaScript (Vanilla)\nDati: LocalStorage (sync real-time)\n\nCreato con ❤️ per semplificare la gestione pratiche');
+        }
+
+        // Preload delle pagine per caricamento più veloce
+        const links = ['cliente.html', 'admin.html'];
+        links.forEach(link => {
+            const prefetch = document.createElement('link');
+            prefetch.rel = 'prefetch';
+            prefetch.href = link;
+            document.head.appendChild(prefetch);
+        });
+    </script>
+</body>
+</html>
