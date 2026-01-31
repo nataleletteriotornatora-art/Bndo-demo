@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Cliente - BandoZen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy: #0B1136;
+            --green: #22C55F;
+            --text: #0B1136;
+            --text-light: #64748B;
+            --border: rgba(11, 17, 54, 0.06);
+            --bg: #FFFFFF;
+            --bg-subtle: #FAFBFC;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            font-size: 16px;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--bg);
+            border-right: 0.5px solid var(--border);
+            padding: 24px;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header { margin-bottom: 40px; }
+        .logo { font-size: 15px; font-weight: 600; color: var(--navy); letter-spacing: -0.02em; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 8px; }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 12px; color: var(--text-light); text-decoration: none;
+            font-weight: 500; font-size: 15px; transition: all 0.3s ease; cursor: pointer;
+        }
+
+        .nav-item:hover { background: var(--bg-subtle); color: var(--text); }
+        .nav-item.active { background: var(--navy); color: white; }
+
+        .nav-badge {
+            margin-left: auto;
+            background: #DC2626;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 40px 48px;
+            max-width: 1400px;
+        }
+
+        .dashboard-header { margin-bottom: 32px; }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .dashboard-header h1 {
+            font-size: 40px;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 8px;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+        }
+
+        .subtitle { color: var(--text-light); font-size: 17px; line-height: 1.6; }
+
+        .alerts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .alert {
+            display: flex; align-items: flex-start; gap: 16px;
+            padding: 20px 24px; border-radius: 16px;
+            background: var(--bg); border: 0.5px solid var(--border);
+            box-shadow: 0 2px 8px rgba(11, 17, 54, 0.04);
+            transition: all 0.3s ease;
+        }
+
+        .alert:hover {
+            box-shadow: 0 8px 32px rgba(11, 17, 54, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .alert-warning {
+            background: rgba(254, 243, 242, 0.5);
+            border-color: rgba(254, 228, 226, 0.6);
+        }
+
+        .alert-warning svg { color: #DC2626; flex-shrink: 0; }
+
+        .alert-info {
+            background: rgba(239, 246, 255, 0.5);
+            border-color: rgba(219, 234, 254, 0.6);
+        }
+
+        .alert-info svg { color: #2563EB; flex-shrink: 0; }
+
+        .alert strong {
+            display: block; color: var(--navy); font-weight: 600;
+            margin-bottom: 4px; font-size: 15px;
+        }
+
+        .alert p { color: var(--text-light); font-size: 14px; line-height: 1.5; }
+
+        .search-bar {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 32px; background: var(--bg);
+            padding: 12px 20px; border-radius: 12px;
+            border: 0.5px solid var(--border);
+            box-shadow: 0 1px 3px rgba(11, 17, 54, 0.04);
+        }
+
+        .search-bar svg { color: var(--text-light); flex-shrink: 0; }
+
+        .search-bar input {
+            flex: 1; border: none; outline: none;
+            font-family: inherit; font-size: 15px;
+            color: var(--text); background: transparent;
+        }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 28px; background: var(--navy); color: white;
+            border: none; border-radius: 12px; font-family: inherit;
+            font-size: 15px; font-weight: 500; cursor: pointer;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .btn-primary::before {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 0; height: 0; background: var(--green); border-radius: 50%;
+            transform: translate(-50%, -50%); transition: width 0.5s ease, height 0.5s ease;
+        }
+
+        .btn-primary:hover::before { width: 300px; height: 300px; }
+        .btn-primary span { position: relative; z-index: 1; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(11, 17, 54, 0.15); }
+
+        .pratiche-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+
+        .pratica-card {
+            background: var(--bg); border: 0.5px solid var(--border);
+            border-radius: 16px; padding: 32px 24px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; box-shadow: 0 2px 8px rgba(11, 17, 54, 0.04);
+            position: relative; overflow: hidden;
+        }
+
+        .pratica-card::before {
+            content: ''; position: absolute; inset: 0; border-radius: 16px; padding: 1px;
+            background: linear-gradient(135deg, transparent, var(--green), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+
+        .pratica-card:hover::before { opacity: 1; }
+
+        .pratica-card:hover {
+            border-color: rgba(34, 197, 95, 0.2);
+            box-shadow: 0 12px 40px rgba(11, 17, 54, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .pratica-card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .pratica-card h3 {
+            font-size: 22px; font-weight: 600; color: var(--navy);
+            margin-bottom: 8px; letter-spacing: -0.02em; line-height: 1.3;
+        }
+
+        .badge {
+            display: inline-block; padding: 6px 12px;
+            border-radius: 8px; font-size: 12px; font-weight: 600;
+        }
+
+        .badge-blue { background: rgba(239, 246, 255, 0.8); color: #2563EB; }
+        .badge-yellow { background: rgba(254, 243, 199, 0.8); color: #D97706; }
+        .badge-green { background: rgba(209, 250, 229, 0.8); color: #059669; }
+
+        .progress-section {
+            margin-top: 20px; padding-top: 20px; border-top: 0.5px solid var(--border);
+        }
+
+        .progress-label {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-label span:first-child {
+            font-size: 14px; font-weight: 500; color: var(--text-light);
+        }
+
+        .progress-percentage {
+            font-size: 32px; font-weight: 300; color: var(--navy);
+            letter-spacing: -0.03em; line-height: 1;
+        }
+
+        .progress-bar {
+            height: 6px; background: var(--bg-subtle);
+            border-radius: 8px; overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%; background: var(--green);
+            border-radius: 8px; transition: width 0.5s ease;
+        }
+
+        .pratica-footer {
+            display: flex; align-items: center; gap: 12px;
+            margin-top: 20px; padding-top: 20px; border-top: 0.5px solid var(--border);
+        }
+
+        .doc-badge, .msg-badge {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 500;
+        }
+
+        .doc-badge { background: rgba(254, 243, 242, 0.8); color: #DC2626; }
+        .msg-badge { background: rgba(239, 246, 255, 0.8); color: #2563EB; }
+
+        .btn-details {
+            flex: 1; padding: 12px 20px; background: var(--navy); color: white;
+            border: none; border-radius: 12px; font-family: inherit; font-size: 14px;
+            font-weight: 500; cursor: pointer; transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+
+        .btn-details::before {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 0; height: 0; background: var(--green); border-radius: 50%;
+            transform: translate(-50%, -50%); transition: width 0.5s ease, height 0.5s ease;
+        }
+
+        .btn-details:hover::before { width: 300px; height: 300px; }
+        .btn-details span { position: relative; z-index: 1; }
+
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .back-button {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; background: var(--bg-subtle);
+            border: 0.5px solid var(--border); border-radius: 12px;
+            color: var(--text); font-size: 15px; font-weight: 500;
+            cursor: pointer; transition: all 0.3s ease; margin-bottom: 24px;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background: var(--bg); border-color: var(--green);
+            transform: translateX(-4px);
+        }
+
+        .dettaglio-header {
+            background: var(--bg); border: 0.5px solid var(--border);
+            border-radius: 16px; padding: 32px; margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(11, 17, 54, 0.04);
+        }
+
+        .dettaglio-title {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .dettaglio-title h2 {
+            font-size: 32px; font-weight: 600; color: var(--navy);
+            letter-spacing: -0.02em; line-height: 1.2;
+        }
+
+        .tabs {
+            display: flex; gap: 8px; background: var(--bg-subtle);
+            padding: 6px; border-radius: 12px; border: 0.5px solid var(--border);
+        }
+
+        .tab-button {
+            flex: 1; padding: 12px 20px; background: transparent;
+            border: none; border-radius: 8px; font-family: inherit;
+            font-size: 15px; font-weight: 500; color: var(--text-light);
+            cursor: pointer; transition: all 0.3s ease;
+        }
+
+        .tab-button.active { background: var(--navy); color: white; }
+
+        .tab-content { margin-top: 24px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .documenti-section, .chat-section {
+            background: var(--bg); border: 0.5px solid var(--border);
+            border-radius: 16px; padding: 32px;
+            box-shadow: 0 2px 8px rgba(11, 17, 54, 0.04);
+        }
+
+        .section-title {
+            font-size: 20px; font-weight: 600; color: var(--navy);
+            margin-bottom: 20px; letter-spacing: -0.01em;
+        }
+
+        .documenti-list { display: flex; flex-direction: column; gap: 16px; }
+
+        .documento-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px; background: var(--bg-subtle);
+            border: 0.5px solid var(--border); border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .documento-item:hover { box-shadow: 0 4px 12px rgba(11, 17, 54, 0.04); }
+
+        .documento-info { display: flex; align-items: center; gap: 16px; flex: 1; }
+
+        .documento-icon {
+            width: 40px; height: 40px; background: var(--bg);
+            border: 0.5px solid var(--border); border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .documento-details h5 {
+            font-size: 15px; font-weight: 600; color: var(--navy);
+            margin-bottom: 4px;
+        }
+
+        .documento-details p { font-size: 13px; color: var(--text-light); }
+
+        .documento-status {
+            padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+        }
+
+        .status-approvato { background: rgba(209, 250, 229, 0.8); color: #059669; }
+        .status-pending { background: rgba(254, 243, 199, 0.8); color: #D97706; }
+        .status-richiesto { background: rgba(254, 243, 242, 0.8); color: #DC2626; }
+        .status-rifiutato { background: rgba(254, 243, 242, 0.8); color: #DC2626; }
+
+        .upload-area {
+            border: 2px dashed var(--border); border-radius: 12px;
+            padding: 40px; text-align: center; cursor: pointer;
+            transition: all 0.3s ease; margin-top: 16px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--green); background: rgba(34, 197, 95, 0.02);
+        }
+
+        .upload-area svg { margin-bottom: 12px; color: var(--text-light); }
+        .upload-area p { color: var(--text-light); font-size: 15px; }
+
+        .chat-messages {
+            display: flex; flex-direction: column; gap: 16px;
+            max-height: 400px; overflow-y: auto; margin-bottom: 20px;
+            padding: 20px; background: var(--bg-subtle); border-radius: 12px;
+        }
+
+        .message {
+            display: flex; flex-direction: column; gap: 8px;
+            max-width: 70%;
+        }
+
+        .message.from-me { align-self: flex-end; align-items: flex-end; }
+        .message.from-team { align-self: flex-start; align-items: flex-start; }
+
+        .message-content {
+            padding: 14px 18px; border-radius: 12px; font-size: 15px; line-height: 1.5;
+        }
+
+        .message.from-me .message-content {
+            background: var(--navy); color: white;
+        }
+
+        .message.from-team .message-content {
+            background: var(--bg); border: 0.5px solid var(--border);
+        }
+
+        .message-time {
+            font-size: 12px; color: var(--text-light);
+        }
+
+        .chat-input {
+            display: flex; gap: 12px;
+        }
+
+        .chat-input input {
+            flex: 1; padding: 14px 18px; border: 0.5px solid var(--border);
+            border-radius: 12px; font-family: inherit; font-size: 15px;
+            outline: none; transition: all 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(34, 197, 95, 0.1);
+        }
+
+        .btn-send {
+            padding: 14px 24px; background: var(--green); color: white;
+            border: none; border-radius: 12px; font-family: inherit;
+            font-size: 15px; font-weight: 500; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-send:hover {
+            background: #16a34a; transform: scale(1.05);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in { animation: slideIn 0.5s ease; }
+
+        .notification {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: var(--navy); color: white; padding: 16px 24px;
+            border-radius: 12px; box-shadow: 0 12px 40px rgba(11, 17, 54, 0.2);
+            animation: slideIn 0.3s ease;
+        }
+
+        .admin-link {
+            position: fixed; bottom: 20px; right: 20px; z-index: 999;
+            padding: 12px 24px; background: var(--green); color: white;
+            border-radius: 12px; text-decoration: none; font-weight: 500;
+            box-shadow: 0 4px 12px rgba(34, 197, 95, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .admin-link:hover {
+            background: #16a34a; transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(34, 197, 95, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">BandoZen Cliente</div>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="nav-item active" onclick="showView('lista')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                </svg>
+                Le Tue Pratiche
+            </a>
+            <a class="nav-item" onclick="showView('documenti')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                Documenti
+                <span class="nav-badge" id="navDocBadge">0</span>
+            </a>
+            <a class="nav-item" onclick="showView('messaggi')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Messaggi
+                <span class="nav-badge" id="navMsgBadge">0</span>
+            </a>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <div id="vistaLista" class="view active">
+            <header class="dashboard-header">
+                <div class="header-content">
+                    <div>
+                        <h1>Le Tue Pratiche</h1>
+                        <p class="subtitle">Gestisci e monitora tutte le tue richieste</p>
+                    </div>
+                </div>
+            </header>
+
+            <div class="alerts-container" id="alertsContainer"></div>
+
+            <div class="search-bar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Cerca pratiche..." oninput="searchPratiche()">
+                <button class="btn-primary" onclick="nuovaPratica()">
+                    <span>Nuova Pratica</span>
+                </button>
+            </div>
+
+            <div class="pratiche-grid" id="praticheGrid"></div>
+        </div>
+
+        <div id="vistaDettaglio" class="view">
+            <a class="back-button" onclick="showView('lista')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Torna alle pratiche
+            </a>
+
+            <div class="dettaglio-header">
+                <div class="dettaglio-title">
+                    <div>
+                        <h2 id="dettaglioTitolo"></h2>
+                        <p class="subtitle" id="dettaglioSubtitle"></p>
+                    </div>
+                    <span class="badge" id="dettaglioBadge"></span>
+                </div>
+
+                <div class="progress-section">
+                    <div class="progress-label">
+                        <span>Avanzamento Pratica</span>
+                        <span class="progress-percentage" id="dettaglioProgress"></span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="dettaglioProgressBar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('documenti')">
+                    Documenti <span id="tabDocBadge"></span>
+                </button>
+                <button class="tab-button" onclick="switchTab('chat')">
+                    Chat <span id="tabChatBadge"></span>
+                </button>
+                <button class="tab-button" onclick="switchTab('timeline')">Timeline</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="documentiTab" class="tab-pane active">
+                    <div class="documenti-section">
+                        <h3 class="section-title">Documenti della Pratica</h3>
+                        <div class="documenti-list" id="documentiList"></div>
+
+                        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <p><strong>Clicca per caricare</strong> o trascina un documento qui</p>
+                            <p style="font-size: 13px; margin-top: 8px;">PDF, JPG, PNG fino a 10MB</p>
+                        </div>
+                        <input type="file" id="fileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadFile(event)">
+                    </div>
+                </div>
+
+                <div id="chatTab" class="tab-pane">
+                    <div class="chat-section">
+                        <h3 class="section-title">Chat con il tuo Consulente</h3>
+                        <div class="chat-messages" id="chatMessages"></div>
+                        <div class="chat-input">
+                            <input type="text" id="messageInput" placeholder="Scrivi un messaggio..." onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button class="btn-send" onclick="sendMessage()">Invia</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="timelineTab" class="tab-pane">
+                    <div class="documenti-section">
+                        <h3 class="section-title">Timeline della Pratica</h3>
+                        <div id="timelineContent"><p style="color: var(--text-light)">Timeline attività pratica</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <a href="admin.html" class="admin-link" target="_blank">👨‍💼 Admin</a>
+
+    <script>
+        function initData() {
+            if (!localStorage.getItem('bandozen_data')) {
+                const initialData = {
+                    pratiche: [
+                        { id: 1, clienteId: 1, nome: "Smart & Start Italia", stato: "In Approvazione", badgeClass: "badge-blue", progress: 60, subtitle: "Pratica in valutazione da Invitalia" },
+                        { id: 2, clienteId: 1, nome: "Resto al Sud", stato: "In Valutazione", badgeClass: "badge-yellow", progress: 45, subtitle: "Documentazione in revisione" },
+                        { id: 3, clienteId: 1, nome: "Nuove Imprese a Tasso Zero", stato: "Completata", badgeClass: "badge-green", progress: 100, subtitle: "Pratica approvata e finanziata" }
+                    ],
+                    documenti: [
+                        { id: 1, praticaId: 1, nome: "Documento Identità", tipo: "PDF", size: "2.4 MB", data: "15/01/2025", stato: "approvato" },
+                        { id: 2, praticaId: 1, nome: "Visura Camerale", tipo: "PDF", size: "1.2 MB", data: "18/01/2025", stato: "pending" },
+                        { id: 3, praticaId: 1, nome: "Business Plan", tipo: "-", size: "-", data: "-", stato: "richiesto" },
+                        { id: 4, praticaId: 1, nome: "Bilancio 2024", tipo: "-", size: "-", data: "-", stato: "richiesto" }
+                    ],
+                    messaggi: [
+                        { id: 1, praticaId: 1, from: 'team', text: 'Buongiorno! Abbiamo ricevuto la documentazione.', time: '22/01/2025 • 10:30' },
+                        { id: 2, praticaId: 1, from: 'me', text: 'Grazie! Quanto tempo richiede?', time: '22/01/2025 • 11:15' },
+                        { id: 3, praticaId: 1, from: 'team', text: 'Di solito 5-7 giorni lavorativi.', time: '22/01/2025 • 11:30' }
+                    ],
+                    clienti: [{ id: 1, nome: "Mario Rossi", email: "mario.rossi@example.com" }]
+                };
+                localStorage.setItem('bandozen_data', JSON.stringify(initialData));
+            }
+        }
+
+        function getData() { return JSON.parse(localStorage.getItem('bandozen_data')); }
+        function saveData(data) { localStorage.setItem('bandozen_data', JSON.stringify(data)); }
+
+        let currentPratica = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initData();
+            renderPratiche();
+            updateAlerts();
+            updateBadges();
+        });
+
+        function renderPratiche() {
+            const data = getData();
+            const grid = document.getElementById('praticheGrid');
+            grid.innerHTML = data.pratiche.map(p => {
+                const docs = data.documenti.filter(d => d.praticaId === p.id && d.stato === 'richiesto').length;
+                const msgs = data.messaggi.filter(m => m.praticaId === p.id && m.from === 'team').length;
+                return `
+                    <div class="pratica-card" onclick="apriDettaglio(${p.id})">
+                        <div class="pratica-card-header">
+                            <div><h3>${p.nome}</h3></div>
+                            <span class="badge ${p.badgeClass}">${p.stato}</span>
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-label">
+                                <span>Avanzamento</span>
+                                <span class="progress-percentage">${p.progress}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${p.progress}%"></div>
+                            </div>
+                        </div>
+                        <div class="pratica-footer">
+                            ${docs > 0 ? `<span class="doc-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg> ${docs} doc.</span>` : ''}
+                            ${msgs > 0 ? `<span class="msg-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> ${msgs} msg</span>` : ''}
+                            <button class="btn-details" onclick="event.stopPropagation(); apriDettaglio(${p.id})"><span>Dettagli</span></button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function apriDettaglio(id) {
+            const data = getData();
+            currentPratica = data.pratiche.find(p => p.id === id);
+            if (!currentPratica) return;
+
+            document.getElementById('dettaglioTitolo').textContent = currentPratica.nome;
+            document.getElementById('dettaglioSubtitle').textContent = currentPratica.subtitle;
+            document.getElementById('dettaglioBadge').textContent = currentPratica.stato;
+            document.getElementById('dettaglioBadge').className = 'badge ' + currentPratica.badgeClass;
+            document.getElementById('dettaglioProgress').textContent = currentPratica.progress + '%';
+            document.getElementById('dettaglioProgressBar').style.width = currentPratica.progress + '%';
+
+            loadDocumenti(id);
+            loadChat(id);
+            showView('dettaglio');
+        }
+
+        function loadDocumenti(praticaId) {
+            const data = getData();
+            const docs = data.documenti.filter(d => d.praticaId === praticaId);
+            const list = document.getElementById('documentiList');
+            list.innerHTML = docs.map(d => `
+                <div class="documento-item">
+                    <div class="documento-info">
+                        <div class="documento-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            </svg>
+                        </div>
+                        <div class="documento-details">
+                            <h5>${d.nome}</h5>
+                            <p>${d.tipo !== '-' ? d.tipo : 'Da caricare'}${d.size !== '-' ? ' • ' + d.size : ''}${d.data !== '-' ? ' • ' + d.data : ''}</p>
+                        </div>
+                    </div>
+                    <span class="documento-status status-${d.stato}">
+                        ${d.stato === 'approvato' ? 'Approvato' : d.stato === 'pending' ? 'In Revisione' : d.stato === 'rifiutato' ? 'Rifiutato' : 'Richiesto'}
+                    </span>
+                </div>
+            `).join('');
+            const richiesti = docs.filter(d => d.stato === 'richiesto').length;
+            document.getElementById('tabDocBadge').textContent = richiesti > 0 ? ` (${richiesti})` : '';
+        }
+
+        function loadChat(praticaId) {
+            const data = getData();
+            const messages = data.messaggi.filter(m => m.praticaId === praticaId);
+            const chat = document.getElementById('chatMessages');
+            chat.innerHTML = messages.map(m => `
+                <div class="message from-${m.from}">
+                    <div class="message-content">${m.text}</div>
+                    <div class="message-time">${m.time}</div>
+                </div>
+            `).join('');
+            chat.scrollTop = chat.scrollHeight;
+            document.getElementById('tabChatBadge').textContent = messages.length > 0 ? ` (${messages.length})` : '';
+        }
+
+        function updateAlerts() {
+            const data = getData();
+            const docsRichiesti = data.documenti.filter(d => d.stato === 'richiesto').length;
+            const nuoviMsg = data.messaggi.filter(m => m.from === 'team').length;
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = '';
+            if (docsRichiesti > 0) {
+                container.innerHTML += `
+                    <div class="alert alert-warning">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                        </svg>
+                        <div><strong>${docsRichiesti} Documenti Richiesti</strong><p>Carica i documenti mancanti</p></div>
+                    </div>
+                `;
+            }
+            if (nuoviMsg > 0) {
+                container.innerHTML += `
+                    <div class="alert alert-info">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <div><strong>${nuoviMsg} Nuovi Messaggi</strong><p>Il tuo consulente ha inviato aggiornamenti</p></div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateBadges() {
+            const data = getData();
+            const docsRichiesti = data.documenti.filter(d => d.stato === 'richiesto').length;
+            const nuoviMsg = data.messaggi.filter(m => m.from === 'team').length;
+            document.getElementById('navDocBadge').textContent = docsRichiesti;
+            document.getElementById('navMsgBadge').textContent = nuoviMsg;
+            if (docsRichiesti === 0) document.getElementById('navDocBadge').style.display = 'none';
+            if (nuoviMsg === 0) document.getElementById('navMsgBadge').style.display = 'none';
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const data = getData();
+            const now = new Date().toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const newMsg = { id: data.messaggi.length + 1, praticaId: currentPratica.id, from: 'me', text: text, time: now.replace(',', ' •') };
+            data.messaggi.push(newMsg);
+            saveData(data);
+            input.value = '';
+            loadChat(currentPratica.id);
+            showNotification('✅ Messaggio inviato');
+        }
+
+        function uploadFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const data = getData();
+            const docRichiesto = data.documenti.find(d => d.praticaId === currentPratica.id && d.stato === 'richiesto');
+            if (docRichiesto) {
+                docRichiesto.tipo = file.name.split('.').pop().toUpperCase();
+                docRichiesto.size = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                docRichiesto.data = new Date().toLocaleDateString('it-IT');
+                docRichiesto.stato = 'pending';
+                saveData(data);
+                loadDocumenti(currentPratica.id);
+                updateAlerts();
+                updateBadges();
+                showNotification(`✅ "${file.name}" caricato! Sarà revisionato entro 24h.`);
+            } else {
+                showNotification('ℹ️ Tutti i documenti sono già stati caricati');
+            }
+            event.target.value = '';
+        }
+
+        function searchPratiche() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.pratica-card').forEach(card => {
+                card.style.display = card.textContent.toLowerCase().includes(query) ? 'block' : 'none';
+            });
+        }
+
+        function nuovaPratica() {
+            showNotification('📝 Contatta il tuo consulente per richiedere una nuova pratica');
+        }
+
+        function showView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if (viewName === 'lista') {
+                document.getElementById('vistaLista').classList.add('active');
+                document.querySelector('.nav-item').classList.add('active');
+            } else if (viewName === 'dettaglio') {
+                document.getElementById('vistaDettaglio').classList.add('active');
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
